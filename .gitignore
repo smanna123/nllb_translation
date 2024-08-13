@@ -2,3 +2,5 @@
 /nlbb/
 __pycache__/
 .idea/
+/nlbb_large/
+/nlbb_distilled/

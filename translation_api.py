@@ -6,7 +6,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 app = FastAPI()
 
 # Load the model and tokenizer
-DIR = "nlbb"
+DIR = "nlbb_distilled"
 try:
     model = AutoModelForSeq2SeqLM.from_pretrained(DIR)
     tokenizer = AutoTokenizer.from_pretrained(DIR)
