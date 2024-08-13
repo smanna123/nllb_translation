@@ -1,0 +1,4 @@
+.env
+/nlbb/
+__pycache__/
+.idea/

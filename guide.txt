@@ -1,0 +1,23 @@
+to run the api file : uvicorn translation_api:app --reload
+
+request structure :
+{     "text": "he is a good boy",
+     "forced_bos_token": "pan_Guru"
+}
+
+langauge        code
+
+ Gurmukhi       pan_Guru
+ Hindi          hin_Deva
+ Telugu         tel_Telu
+ Bangla         ben_Beng
+ Marathi        mar_Deva
+ Arabic         arb_Arab (Modern Standard Arabic)/ arb_Latn (Modern Standard Arabic (Romanized))
+ Nepali         npi_Deva
+ Gujarati      	guj_Gujr
+ Kannada        kan_Knda
+ Indonesian     ind_Latn
+ Afrikaans      afr_Latn
+ Spanish        spa_Latn
+ Ukranian       ukr_Cyrl
+ Thai           tha_Thai
