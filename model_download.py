@@ -34,5 +34,5 @@ def load_model_and_tokenizer(checkpoint, directory):
 
 if __name__ == "__main__":
     DIR = "nlbb_distilled"
-    CHECKPOINT = "facebook/nllb-200-distilled-600M"
+    CHECKPOINT = "facebook/nllb-200-distilled-1.3B"
     load_model_and_tokenizer(CHECKPOINT, DIR)
