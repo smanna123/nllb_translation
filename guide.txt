@@ -22,4 +22,3 @@ langauge        code
  Ukranian       ukr_Cyrl
  Thai           tha_Thai
 
- HUGGINGFACE_ACCESS_TOKEN="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"
