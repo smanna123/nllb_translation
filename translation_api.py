@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import torch
 
 # Initialize the FastAPI app
 app = FastAPI()
@@ -10,8 +11,8 @@ DIR = "nlbb_distilled"
 try:
     model = AutoModelForSeq2SeqLM.from_pretrained(DIR)
     tokenizer = AutoTokenizer.from_pretrained(DIR)
-    model.to_bettertransformer()
-    model.to('cpu')
+    #model.to_bettertransformer()
+    model.to('cuda')
 except Exception as e:
     raise HTTPException(status_code=500, detail=f"Failed to load model or tokenizer: {str(e)}")
 
@@ -26,9 +27,10 @@ class TranslationRequest(BaseModel):
 def translate(request: TranslationRequest):
     try:
         # Tokenize the input text
-        inputs = tokenizer(request.text, return_tensors="pt")
+        inputs = tokenizer(request.text, return_tensors="pt").to('cuda')
         # Convert the dynamic forced_bos_token to its ID
         bos_token_id = tokenizer.convert_tokens_to_ids(request.forced_bos_token)
+        bos_token_id = torch.tensor([bos_token_id], device='cuda')
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Tokenization error: {str(e)}")
 
