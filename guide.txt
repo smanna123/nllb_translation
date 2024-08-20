@@ -21,3 +21,5 @@ langauge        code
  Spanish        spa_Latn
  Ukranian       ukr_Cyrl
  Thai           tha_Thai
+
+ HUGGINGFACE_ACCESS_TOKEN="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"
