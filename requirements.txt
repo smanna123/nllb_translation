@@ -3,3 +3,4 @@ torch
 python-dotenv
 uvicorn
 fastapi
+optimum

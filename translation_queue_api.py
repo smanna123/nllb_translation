@@ -1,49 +1,52 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from queue import Queue
+import threading
 
 # Initialize the FastAPI app
 app = FastAPI()
 
-# Load the model and tokenizer
+# Load the model
 DIR = "nlbb_distilled"
 try:
     model = AutoModelForSeq2SeqLM.from_pretrained(DIR)
-    tokenizer = AutoTokenizer.from_pretrained(DIR)
-    model.to_bettertransformer()
-    model.to('cpu')
+    model.to('cpu')  # Move model to CPU
 except Exception as e:
-    raise HTTPException(status_code=500, detail=f"Failed to load model or tokenizer: {str(e)}")
+    raise HTTPException(status_code=500, detail=f"Failed to load model: {str(e)}")
 
+# Prepare a pool of tokenizers
+NUM_TOKENIZERS = 4  # You can adjust the number based on your server's capability
+tokenizer_queue = Queue()
+for _ in range(NUM_TOKENIZERS):
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(DIR)
+        tokenizer_queue.put(tokenizer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load tokenizer: {str(e)}")
 
 # Define the request model
 class TranslationRequest(BaseModel):
     text: str
     forced_bos_token: str
 
-
 @app.post("/translate/")
 def translate(request: TranslationRequest):
+    tokenizer = tokenizer_queue.get()  # Get a tokenizer from the queue
     try:
         # Tokenize the input text
         inputs = tokenizer(request.text, return_tensors="pt")
-        # Convert the dynamic forced_bos_token to its ID
         bos_token_id = tokenizer.convert_tokens_to_ids(request.forced_bos_token)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Tokenization error: {str(e)}")
 
-    try:
         # Generate the translated tokens
         translated_tokens = model.generate(
             **inputs, forced_bos_token_id=bos_token_id, max_length=512
         )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Model generation error: {str(e)}")
-
-    try:
         # Decode the tokens and return the translated text
         translated_text = tokenizer.batch_decode(translated_tokens, skip_special_tokens=True)[0]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Decoding error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        tokenizer_queue.put(tokenizer)  # Return the tokenizer to the queue
 
     return {"translated_text": translated_text}
