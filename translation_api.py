@@ -7,12 +7,12 @@ import torch
 app = FastAPI()
 
 # Load the model and tokenizer
-DIR = "nlbb_distilled"
+DIR = "nlbb_distilled_small"
 try:
     model = AutoModelForSeq2SeqLM.from_pretrained(DIR)
     tokenizer = AutoTokenizer.from_pretrained(DIR)
     #model.to_bettertransformer()
-    model.to('cuda')
+    model.to('cpu')
 except Exception as e:
     raise HTTPException(status_code=500, detail=f"Failed to load model or tokenizer: {str(e)}")
 
@@ -23,14 +23,14 @@ class TranslationRequest(BaseModel):
     forced_bos_token: str
 
 
-@app.post("/translate/")
+@app.post("/translate")
 def translate(request: TranslationRequest):
     try:
         # Tokenize the input text
-        inputs = tokenizer(request.text, return_tensors="pt").to('cuda')
+        inputs = tokenizer(request.text, return_tensors="pt").to('cpu')
         # Convert the dynamic forced_bos_token to its ID
         bos_token_id = tokenizer.convert_tokens_to_ids(request.forced_bos_token)
-        bos_token_id = torch.tensor([bos_token_id], device='cuda')
+        bos_token_id = torch.tensor([bos_token_id], device='cpu')
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Tokenization error: {str(e)}")
 
@@ -49,3 +49,8 @@ def translate(request: TranslationRequest):
         raise HTTPException(status_code=500, detail=f"Decoding error: {str(e)}")
 
     return {"translated_text": translated_text}
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -4,3 +4,4 @@ __pycache__/
 .idea/
 /nlbb_large/
 /nlbb_distilled/
+/nlbb_distilled_small/

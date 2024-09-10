@@ -8,7 +8,7 @@ import threading
 app = FastAPI()
 
 # Load the model
-DIR = "nlbb_distilled"
+DIR = "nlbb_distilled_small"
 try:
     model = AutoModelForSeq2SeqLM.from_pretrained(DIR)
     model.to('cpu')  # Move model to CPU
@@ -16,7 +16,7 @@ except Exception as e:
     raise HTTPException(status_code=500, detail=f"Failed to load model: {str(e)}")
 
 # Prepare a pool of tokenizers
-NUM_TOKENIZERS = 4  # You can adjust the number based on your server's capability
+NUM_TOKENIZERS = 6  # You can adjust the number based on your server's capability
 tokenizer_queue = Queue()
 for _ in range(NUM_TOKENIZERS):
     try:
@@ -25,10 +25,12 @@ for _ in range(NUM_TOKENIZERS):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load tokenizer: {str(e)}")
 
+
 # Define the request model
 class TranslationRequest(BaseModel):
     text: str
     forced_bos_token: str
+
 
 @app.post("/translate/")
 def translate(request: TranslationRequest):
@@ -50,3 +52,9 @@ def translate(request: TranslationRequest):
         tokenizer_queue.put(tokenizer)  # Return the tokenizer to the queue
 
     return {"translated_text": translated_text}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
